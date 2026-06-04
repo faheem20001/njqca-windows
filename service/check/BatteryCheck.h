@@ -4,6 +4,7 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <synchapi.h>
 
 using namespace std;
 using json = nlohmann::json;
@@ -165,29 +166,40 @@ public:json getTestResult(std::string cmd_battery) {
           run_loop=true;
         }
       }
-      while(run_loop){
-        cout<<"\033[33m\nBattery is charging.....[y/yes]?\033[0m" <<flush;
-        current_percentage=Battery_percentage(cmd_battery1);
-        second_battery=Battery_percentage2(cmd_battery1);
-        if(second_battery>0){
-          current_percentage=(current_percentage+second_battery)/2;
-        }
-        if(current_percentage>=battery_charge_percentage){
-          paramtrmap["charge_percentage"] = to_string(current_percentage);
-          paramtrmap["Battery_charge_percentage_status"] = "PASS";
-          break;
-        }
-        if(!ischarging(cmd_battery1) && !ischarging2(cmd_battery1)){ 
-          bool status=util.generatePopup("Battery is not charging","If U want to retry connect Adapter then click retry, to exit click Not working?");
-          if(status){
-            paramtrmap["charge_percentage"] = to_string(current_percentage);
-            paramtrmap["Battery_charge_percentage_status"] = "FAIL";
-            paramtrmap["reason"]="Cancelled By User";
-            break;
-          }
-        }
-        Sleep(3000);
+      // Replace the while(run_loop) block (lines 168-190) with:
+int max_retries = 200; // 200 x 3s = ~10 min max wait
+int retry_count = 0;
+while(run_loop){
+    cout<<"\033[33m\nBattery is charging... ("<<retry_count+1<<"/"<<max_retries<<")\033[0m"<<flush;
+    current_percentage=Battery_percentage(cmd_battery1);
+    second_battery=Battery_percentage2(cmd_battery1);
+    if(second_battery>0){
+      current_percentage=(current_percentage+second_battery)/2;
+    }
+    if(current_percentage>=battery_charge_percentage){
+      paramtrmap["charge_percentage"] = to_string(current_percentage);
+      paramtrmap["Battery_charge_percentage_status"] = "PASS";
+      break;
+    }
+    if(!ischarging(cmd_battery1) && !ischarging2(cmd_battery1)){
+      bool status=util.generatePopup("Battery is not charging","Connect Adapter then click retry, or click Not working to skip");
+      if(status){
+        paramtrmap["charge_percentage"] = to_string(current_percentage);
+        paramtrmap["Battery_charge_percentage_status"] = "FAIL";
+        paramtrmap["reason"]="Cancelled By User";
+        break;
       }
+    }
+    retry_count++;
+    if(retry_count >= max_retries){
+      paramtrmap["charge_percentage"] = to_string(current_percentage);
+      paramtrmap["Battery_charge_percentage_status"] = "FAIL";
+      paramtrmap["reason"]="Timeout: charge did not reach "+to_string(battery_charge_percentage)+"%";
+      cout<<"\nBattery charge timeout. Current: "<<current_percentage<<"% Required: "<<battery_charge_percentage<<"%"<<endl;
+      break;
+    }
+    Sleep(3000);
+}
       
     }
     fieldidmap["stock_info_id"] = stock_info_id;
@@ -669,6 +681,7 @@ public: bool ischarging2(string cmd_battery) {
     string percentage;
     try{
       json jsondata = getTestResult(cmd_battery);
+      if(jsondata.size() < 2) return 0;  // single battery — no Battery 2
       percentage=jsondata[1]["EstimatedChargeRemaining"].get<string>();
       current_percentage = stoi(percentage);
     }catch (const std::invalid_argument& e) {
