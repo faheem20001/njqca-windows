@@ -29,7 +29,7 @@ class HDDSentinelCheck: public V2Service {
 
     public: int HDDSentinel_test(string stockinfoID,string partId,string partconfigid, string item_id,string created_by,string parameters,map<int,map<string,string>>config_data){
         cout<<"\nHDD Sentinel Check Running....."<<endl;
-        deletefile("Hard Disk Sentinel/HDSentinel_6.20_report.txt");
+        deletefile("Hard Disk Sentinel/HDSentinel_6.40 PRO_report.txt");
         string removetask="cmd /c cscript \"Hard Disk Sentinel\\removehds7.vbs\"";
         string reportcommand="start \"\" \"Hard Disk Sentinel\\HDSentinel.exe\" /REPORT";
         string KillProcess="cmd /c \"taskkill /im HDSentinel.exe /f\"";
@@ -155,7 +155,7 @@ class HDDSentinelCheck: public V2Service {
             system(reportcommand.c_str());
             auto start = std::chrono::steady_clock::now();
             while(RunLoop){
-                if(fs::exists("Hard Disk Sentinel/HDSentinel_6.20_report.txt")){
+                if(fs::exists("Hard Disk Sentinel/HDSentinel_6.40 PRO_report.txt")){
                     Sleep(3000);
                     RunLoop=false;
                     break;
@@ -488,7 +488,7 @@ class HDDSentinelCheck: public V2Service {
     std::map<std::string, std::string> resultData;
     map<int , map<string, string>> stockData;
     int count=0;
-    std::string filePath = "Hard Disk Sentinel/HDSentinel_6.20_report.txt";
+    std::string filePath = "Hard Disk Sentinel/HDSentinel_6.40 PRO_report.txt";
     std::ifstream file(filePath);
     if (!file.is_open()) {
         std::cerr << "Failed to open the file." << std::endl;
