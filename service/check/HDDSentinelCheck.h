@@ -29,10 +29,12 @@ class HDDSentinelCheck: public V2Service {
 
     public: int HDDSentinel_test(string stockinfoID,string partId,string partconfigid, string item_id,string created_by,string parameters,map<int,map<string,string>>config_data){
         cout<<"\nHDD Sentinel Check Running....."<<endl;
+        system("powershell -Command \"Stop-Process -Name HDSentinel -Force -ErrorAction SilentlyContinue\"");
+        Sleep(2000);
         deletefile("Hard Disk Sentinel/HDSentinel_6.40 PRO_report.txt");
         string removetask="cmd /c cscript \"Hard Disk Sentinel\\removehds7.vbs\"";
         string reportcommand="start \"\" \"Hard Disk Sentinel\\HDSentinel.exe\" /REPORT";
-        string KillProcess="cmd /c \"taskkill /im HDSentinel.exe /f\"";
+        string KillProcess="powershell -Command \"Stop-Process -Name HDSentinel -Force -ErrorAction SilentlyContinue\"";
         map<string,string> fieldmap; 
         fieldmap["stock_info_id"]=stockinfoID;
         fieldmap["part_id"]=partId;
