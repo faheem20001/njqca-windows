@@ -165,7 +165,7 @@ class HDDSentinelCheck: public V2Service {
                 Sleep(2000);
                 auto end = std::chrono::steady_clock::now();
                 auto duration = std::chrono::duration_cast<std::chrono::seconds>(end - start);
-                if (duration.count() > 60) {
+                if (duration.count() > 120) {
                     RunLoop= false;
                 }
             }

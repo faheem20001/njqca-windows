@@ -1,12 +1,18 @@
 # -*- mode: python ; coding: utf-8 -*-
+from PyInstaller.utils.hooks import collect_submodules, collect_data_files
 
+scipy_hidden = collect_submodules('scipy')
+scipy_data   = collect_data_files('scipy')
+
+pandas_hidden = collect_submodules('pandas')
+pandas_data   = collect_data_files('pandas')
 
 a = Analysis(
     ['audio_similarity.py'],
     pathex=[],
     binaries=[],
-    datas=[],
-    hiddenimports=[],
+    datas=scipy_data + pandas_data,
+    hiddenimports=scipy_hidden + pandas_hidden,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
